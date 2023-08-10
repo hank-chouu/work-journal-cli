@@ -1,7 +1,0 @@
-setup.py
-work_journal_tool.egg-info/PKG-INFO
-work_journal_tool.egg-info/SOURCES.txt
-work_journal_tool.egg-info/dependency_links.txt
-work_journal_tool.egg-info/entry_points.txt
-work_journal_tool.egg-info/requires.txt
-work_journal_tool.egg-info/top_level.txt
