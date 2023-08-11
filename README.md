@@ -38,13 +38,13 @@ source ./venv/bin/activate
 
 ## Usage 
 
-After finishing the above steps, you may run the following commands to setup your scheduled journal:
+After finishing the above steps, you may run the following commands to setup your journaling schedule:
 
 ```
-(venv) wjournal setup "0 18 * * 1,2,3,4,5" --dir /work/journal
+(venv) wjournal setup "0 18 * * 1,2,3,4,5" --dir /path/for/journals
 ```
 
-In this `setup` command, you need to pass a [cron schedule expression](https://crontab.guru/) to initiate. In the example, the expression means it's scheduled to pop out the editor every workday at 6pm. You can specify the directory you wnat the journals to be saved. If `--dir` is not specified, it will be this repo on default.
+In this `setup` command, you need to pass a [cron schedule expression](https://crontab.guru/) to initiate. In the example, the expression means it's scheduled to pop out the editor every workday at 6pm. You can specify the directory you wnat the journals to be saved. If `--dir` is not specified, it will be the working directory on default.
 
 If you want to modify or remove the previous created job, simply run
 
