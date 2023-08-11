@@ -16,7 +16,7 @@ def main():
 @click.option("--dir", default=".", help="Directory path to create markdown files")
 def setup(time, dir):
     """
-    Setup a cron job to create a daily markdown journal.
+    Setup a cron job to create a markdown journal on schedule.
     
     TIME is the cron schedule format (e.g., '0 9 * * *' for 9 AM).
     """
@@ -25,22 +25,20 @@ def setup(time, dir):
         dir = cwd
     setup_cron_job(time, dir)
     expression = get_description(time)
-    click.echo(f"Cron job set to create daily journal at {expression} in directory {dir}")
+    click.echo(f"Cron job set to create a journal at {expression} in directory {dir}")
+
+@main.command()
+@click.option("--dir", default='.')
+def run(dir):
+    """Initiate a journal immediately."""
+
+    create_markdown_file(dir)
 
 @main.command()
 def remove():
     """Remove the previously created cron job"""
     remove_cron_job()
     click.echo("Cron job removed")
-
-
-@main.command()
-@click.option("--dir", default='.')
-def run(dir):
-
-    create_markdown_file(dir)
-
-
 
 def open_text_editor(filename):
     try:
