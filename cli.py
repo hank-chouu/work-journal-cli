@@ -1,5 +1,7 @@
 import click
 import os
+import sys
+import getpass
 import subprocess
 from datetime import datetime
 from crontab import CronTab
@@ -11,13 +13,16 @@ def main():
 
 @main.command()
 @click.argument("time", type=str)
-@click.option("--dir", "-d", default=".", help="Directory path to create markdown files")
+@click.option("--dir", default=".", help="Directory path to create markdown files")
 def setup(time, dir):
     """
     Setup a cron job to create a daily markdown journal.
     
     TIME is the cron schedule format (e.g., '0 9 * * *' for 9 AM).
     """
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    if dir == '.':
+        dir = cwd
     setup_cron_job(time, dir)
     expression = get_description(time)
     click.echo(f"Cron job set to create daily journal at {expression} in directory {dir}")
@@ -28,10 +33,26 @@ def remove():
     remove_cron_job()
     click.echo("Cron job removed")
 
+
+@main.command()
+@click.option("--dir", default='.')
+def run(dir):
+
+    create_markdown_file(dir)
+
+
+
+def open_text_editor(filename):
+    try:
+        editor_command = "/usr/bin/gedit"
+        subprocess.run([editor_command, filename])
+    except Exception as e:
+        click.echo(f"Error opening text editor: {e}")
+
 def create_markdown_file(dir):
     now = datetime.now()
-    filename = os.path.join(dir, now.strftime("%Y-%m-%d") + "_journal.md")
-    heading = "# " + now.strftime("%B %d, %Y") + " Working Journal\n"
+    filename = os.path.join(dir, now.strftime("%Y-%m-%d") + "-journal.md")
+    heading = "# " + now.strftime("%B %d, %Y") + " Working Journal\n\n"
     
     with open(filename, "w") as f:
         f.write(heading)
@@ -39,27 +60,22 @@ def create_markdown_file(dir):
     open_text_editor(filename)
 
 def setup_cron_job(schedule, output_dir):
-    cron = CronTab(user=os.getlogin())
-    command = f'python "{os.path.abspath(__file__)}" work_journal --output-dir "{output_dir}"'
-    job = cron.new(command=command)
+    cron = CronTab(user=getpass.getuser())
+    venv_path = sys.prefix
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    command = f'DISPLAY=:1 {venv_path}/bin/python {os.path.abspath(__file__)} run --dir "{output_dir}">> {cwd}/cron.log 2>&1'
+    job = cron.new(command=command, comment='cron_journal')
     job.setall(schedule)
     cron.write()
 
 def remove_cron_job():
-    cron = CronTab(user=os.getlogin())
+    cron = CronTab(user=getpass.getuser())
     for job in cron:
-        if "work_journal" in job.command:
+        if 'cron_journal' in job.comment:
             cron.remove(job)
             cron.write()
             return
-
-def open_text_editor(filename):
-    try:
-        # Replace 'editor_command' with the command to open your preferred text editor
-        editor_command = "gedit"
-        subprocess.run([editor_command, filename])
-    except Exception as e:
-        click.echo(f"Error opening text editor: {e}")
+        
 
 if __name__ == "__main__":
     main()
