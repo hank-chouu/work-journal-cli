@@ -50,8 +50,7 @@ def open_text_editor(filename):
 def create_markdown_file(dir):
     now = datetime.now()
     filename = os.path.join(dir, now.strftime("%Y-%m-%d") + "-journal.md")
-    heading = "# " + now.strftime("%B %d, %Y") + " Working Journal\n\n"
-    
+    heading = "# " + now.strftime("%B %d, %Y") + " Working Journal\n\n"        
     with open(filename, "w") as f:
         f.write(heading)
     
@@ -61,6 +60,16 @@ def setup_cron_job(schedule, output_dir):
     cron = CronTab(user=getpass.getuser())
     venv_path = sys.prefix
     cwd = os.path.dirname(os.path.abspath(__file__))
+    if not os.path.isdir(output_dir):
+        click.echo('The path you entered is not a directory. Exiting...')
+        raise click.exceptions.Exit(code=1)
+    elif not os.path.exists(output_dir):
+        try:
+            os.makedirs(output_dir)
+        except PermissionError:
+            click.echo('You don\'t have permission to the directory. Exiting...')
+            raise click.exceptions.Exit(code=1)
+
     command = f'DISPLAY=:1 {venv_path}/bin/python {os.path.abspath(__file__)} run --dir "{output_dir}">> {cwd}/cron.log 2>&1'
     job = cron.new(command=command, comment='cron_journal')
     job.setall(schedule)
