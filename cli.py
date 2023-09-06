@@ -41,6 +41,7 @@ def remove():
     click.echo("Cron job removed")
 
 def open_text_editor(filename):
+
     try:
         editor_command = "/usr/bin/gedit"
         subprocess.run([editor_command, filename])
@@ -48,22 +49,35 @@ def open_text_editor(filename):
         click.echo(f"Error opening text editor: {e}")
 
 def create_markdown_file(dir):
+
     now = datetime.now()
-    filename = os.path.join(dir, now.strftime("%Y-%m-%d") + "-journal.md")
-    heading = "# " + now.strftime("%B %d, %Y") + " Working Journal\n\n"        
+    current_year_and_month = now.strftime('%Y-%m')
+    current_date = now.strftime('%Y-%m-%d')
+
+    monthly_folder_path = os.path.join(dir, current_year_and_month)
+    if not os.path.exists(monthly_folder_path):
+        os.makedirs(monthly_folder_path)
+
+    filename = os.path.join(monthly_folder_path, now.strftime("%Y-%m-%d") + "-journal.md")
+    heading = f"# {now.strftime('%B %d, %Y')} Working Journal\n\n"
     with open(filename, "w") as f:
         f.write(heading)
     
     open_text_editor(filename)
 
 def setup_cron_job(schedule, output_dir):
+
     cron = CronTab(user=getpass.getuser())
     venv_path = sys.prefix
     cwd = os.path.dirname(os.path.abspath(__file__))
+
     if not os.path.isdir(output_dir):
+
         click.echo('The path you entered is not a directory. Exiting...')
         raise click.exceptions.Exit(code=1)
+    
     elif not os.path.exists(output_dir):
+
         try:
             os.makedirs(output_dir)
         except PermissionError:
@@ -76,6 +90,7 @@ def setup_cron_job(schedule, output_dir):
     cron.write()
 
 def remove_cron_job():
+
     cron = CronTab(user=getpass.getuser())
     for job in cron:
         if 'cron_journal' in job.comment:
@@ -85,4 +100,5 @@ def remove_cron_job():
         
 
 if __name__ == "__main__":
-    main()
+    # main()
+    create_markdown_file(os.path.dirname(os.path.abspath(__file__)))

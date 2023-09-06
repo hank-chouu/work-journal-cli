@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='work-journal-cli',
-    version='1.0',
+    version='v1.1',
     packages=find_packages(),
     install_requires=[
         'click',
@@ -10,7 +10,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'wjournal = cli:main',
+            'work-journal = cli:main',
         ],
     },
 )
