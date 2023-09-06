@@ -41,15 +41,15 @@ source ./venv/bin/activate
 After finishing the above steps, you may run the following commands to setup your journaling schedule:
 
 ```
-(venv) wjournal setup "0 18 * * 1,2,3,4,5" --dir /path/for/journals
+(venv) work-journal setup "0 18 * * 1,2,3,4,5" --dir /home/user/path/for/journals
 ```
 
-In this `setup` command, you need to pass a [cron schedule expression](https://crontab.guru/) to initiate. In the example, the expression means it's scheduled to pop out the editor every workday at 6pm. You can specify the directory you wnat the journals to be saved. If `--dir` is not specified, it will be the working directory on default.
+In this `setup` command, you need to pass a [cron schedule expression](https://crontab.guru/) to initiate. In the example, the expression means it's scheduled to pop out the editor every workday at 6pm. You can specify the directory you wnat the journals to be saved. If `--dir` is not specified, it will be the directory where the source file (`cli.py`) is located on default.
 
 If you want to modify or remove the previous created job, simply run
 
 ```
-(venv) wjournal remove
+(venv) work-journal remove
 ```
 
 and setup a new job if you want. 
