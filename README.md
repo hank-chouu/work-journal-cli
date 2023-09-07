@@ -60,4 +60,19 @@ To check for the existing job, you can run
 crontab -l
 ```
 
-the cron job made with this tool will have a comment with `#cron_journal`.
+the cron job made with this tool will have a comment with `#cron_journal`. You may assign a custom job comment to label out your scheduled journaling by passing a comment name with `-c` or `--job-comment` while setting up. Note that a duplicated comment is not allowed. 
+
+And to check when will the next journal will be created, run
+
+```
+(venv) work-journal next-run
+```
+
+## Help command
+
+You can run
+```
+(venv) work-journal --help
+```
+
+to see the help available.
