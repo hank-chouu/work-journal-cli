@@ -1,2 +1,3 @@
 *.log
 work_journal_cli.egg-info/
+__pycache__/
