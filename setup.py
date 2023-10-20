@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='work-journal-cli',
+    name='work_journal',
     version='v1.2',
     packages=find_packages(),
     install_requires=[

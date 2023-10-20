@@ -1,8 +1,6 @@
 click==8.1.6
 cron-descriptor==1.4.0
 croniter==1.4.1
-markdown-journal-tool @ file:///home/hank/github-repos/work-journal-cli/dist/markdown-journal-tool-0.1.tar.gz#sha256=ff3e921fd8b14b2f7945bbeb28d669fb4b452892993f5406745c31eebbed77da
 python-crontab==3.0.0
 python-dateutil==2.8.2
 six==1.16.0
--e git+https://github.com/hank-chouu/work-journal-cli.git@53bc3b25ca4d0b1cca0735f3085a09eaea19ce19#egg=work_journal_cli
