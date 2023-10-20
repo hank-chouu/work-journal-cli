@@ -10,7 +10,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'work-journal = cli:main',
+            'work-journal = work_journal.cli:main',
         ],
     },
 )

@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "work-journal"
+version = "1.0.2"
+description = "A CLI tool to schedule for a daily work journal."
+authors = ["Hank Chou <hengtse.me@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.7"
+python-crontab = "^3.0.0"
+cron-descriptor = "^1.4.0"
+croniter = "^2.0.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.10.0"
+isort = "^5.12.0"
+ruff = "^0.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
