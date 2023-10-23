@@ -1,13 +1,15 @@
 import getpass
 import os
+import re
 
 import click
-from crontab import CronTab
+from crontab import CronTab, CronItem
 from croniter import croniter
 from datetime import datetime
 
-from work_journal.setup import JournalSetter
-from work_journal.run import create_markdown_file
+from work_journal.setter import JournalSetter
+from work_journal.create import create_markdown_file
+from work_journal.config import is_valid_cmd, config, config_file_path
 
 
 @click.group()
@@ -16,46 +18,51 @@ def main():
 
 
 @main.command()
-@click.argument("schedule", type=str)
-@click.option(
-    "--dir",
-    "-d",
-    "journal_folder",
-    default=".",
-    help="Directory for creating journals, current working directory is set as default.",
-)
-@click.option(
-    "--job-comment",
-    "-c",
-    default="work_journal",
-    help="Label the job with job comment, default is work_journal. Duplicated job comment is not allowed",
-)
-def setup(schedule, journal_folder, job_comment):
+def create():
     """
-    Setup a cron job to create a markdown journal on schedule.
-
-    TIME is the cron schedule format (e.g., '0 9 * * *' for 9 AM).
+    Create a cron job for scheduling a journal.
     """
     new_journal = JournalSetter()
 
-    new_journal.cron_expression = schedule
-    if journal_folder == ".":
-        current_folder = os.path.dirname(os.path.abspath(__file__))
-        new_journal.journal_folder = current_folder
-    else:
-        new_journal.journal_folder = journal_folder
-    new_journal.job_comment = job_comment
+    journal_name = click.prompt("Journal name", type=str, default="#")
+    while new_journal.is_name_duplicated(journal_name) is True:
+        click.echo("Journal name must not be duplicated.")
+        journal_name = click.prompt("Journal name", type=str, default="#")
+    new_journal.journal_name = journal_name
+
+    schedule = click.prompt("Schedule", type=str)
+    while not croniter.is_valid(schedule):
+        click.echo("Schedule is not valid. Please consult the cron expression online.")
+        schedule = click.prompt("Schedule", type=str)
+    new_journal.schedule = schedule
+
+    journal_folder = click.prompt(
+        "Folder path for saving journals",
+        default=os.path.join(os.path.expanduser("~"), "work_journals"),
+    )
+    while True:
+        if os.path.isdir(journal_folder):
+            break
+        try:
+            click.echo(f"Folder not found. Making folder {journal_folder}.")
+            os.makedirs(journal_folder)
+            click.echo("Succeeded.")
+            break
+        except PermissionError:
+            click.echo(
+                f"Error: you don't have permission to make a new folder at {journal_folder}."
+            )
+            journal_folder = click.prompt(
+                "Folder path for saving journals",
+                default=os.path.join(os.path.expanduser("~"), "work_journals"),
+            )
+    new_journal.journal_folder = journal_folder
 
     new_journal.setup_new_journal()
 
 
 @main.command()
-@click.option(
-    "--dir",
-    "journal_folder",
-    default=".",
-    help="Directory for creating journals, current working directory is set as default.",
-)
+@click.argument("folder")
 @click.option(
     "--overwrite",
     "allow_overwrite",
@@ -63,52 +70,112 @@ def setup(schedule, journal_folder, job_comment):
     default=False,
     help="Allow overwriting the existing journal, set to False as default.",
 )
-def run(journal_folder, allow_overwrite):
-    """create a journal and start writing immediately."""
+def run(folder, allow_overwrite):
+    """Make a journal and start writing immediately."""
+    create_markdown_file(folder, allow_overwrite)
 
-    create_markdown_file(journal_folder, allow_overwrite)
+
+def _get_jobs(cron: CronTab):
+    return cron.find_comment(re.compile(r"^work_journal_.*"))
 
 
 @main.command()
-@click.option(
-    "--job-comment",
-    "-c",
-    default="work_journal",
-    help="Specify the job with job comment, work_journal is set as default.",
-)
-def remove(job_comment):
+@click.option("--name", default=None, help="Pass special characters in quotations.")
+def remove(name: None | str):
     """Remove the previously created work_journal cron job"""
     cron = CronTab(user=getpass.getuser())
-    job = next(cron.find_comment(job_comment), None)
-    if job is None:
-        click.echo(f"No cron job found with comment {job_comment}.")
-        raise click.exceptions.Exit(code=1)
+
+    if next(_get_jobs(cron), None) is None:
+        click("There is no scheduled journal.")
+    elif name is None:
+        if click.confirm(
+            "This will remove all scheduled journals. Proceed?", abort=True
+        ):
+            for job in _get_jobs(cron):
+                cron.remove(job)
+                journal_name = re.sub(r"^work_journal_", "", job.comment)
+                click.echo(f"Journal {journal_name} removed.")
+            cron.write()
+            click.echo("Removed all scheduled journals.")
     else:
-        cron.remove(job)
-        cron.write()
-        click.echo(f"Cron job {job_comment} removed.")
-    
+        name = name.strip()
+        job = next(
+            cron.find_comment(
+                f"work_journal_{name}",
+            ),
+            None,
+        )
+        if job is None:
+            click.echo(f"No journal named {name} found.")
+        else:
+            if click.confirm(f"Journal {name} found. Remove?", abort=True):
+                cron.remove(job)
+                cron.write()
+                click.echo(f"Journal {name} removed.")
+
+
+def _format_journal_info(job: CronItem):
+    name = re.sub(r"^work_journal_", "", job.comment)
+    folder = re.search(r"run\s+([^>]+)", job.command).group(1)
+    schedule = str(job.slices)
+    croniter_ = croniter(schedule)
+    next_run_time = croniter_.get_next(datetime)
+
+    msg = f"""
+    Journal name: {name}
+    Folder: {folder}
+    Schedule: {schedule}
+    Next run: {next_run_time}
+    """
+    return msg
 
 
 @main.command()
-@click.option(
-    "--job-comment",
-    "-c",
-    default="work_journal",
-    help="Specify the job with job comment, work_journal is set as default.",
-)
-def next_run(job_comment):
-    """Show when the next journal will be created."""
+@click.option("--name", default=None, help="Pass special characters in quotations.")
+def info(name: None | str):
+    """Show the details of the scheduled info."""
 
     cron = CronTab(user=getpass.getuser())
-    job = next(cron.find_comment(job_comment), None)
-    if job is None:
-        click.echo(f"No cron job found with comment {job_comment}.")
+    if next(_get_jobs(cron), None) is None:
+        click.echo("There is no scheduled journal.")
+        return
+    elif name is None:
+        for job in _get_jobs(cron):
+            msg = _format_journal_info(job)
+            click.echo(msg)
     else:
-        croniter_ = croniter(str(job.slices))
-        next_run_time = croniter_.get_next(datetime)
-        click.echo(f"Next run time for job {job_comment} is {next_run_time}.")
-        
+        name = name.strip()
+        job = next(
+            cron.find_comment(
+                f"work_journal_{name}",
+            ),
+            None,
+        )
+        if job is None:
+            click.echo(f"No journal named {name} found.")
+        else:
+            msg = _format_journal_info(next(job))
+            click.echo(msg)
+
+
+
+
+
+@main.command
+@click.option("--set-editor", type=str)
+def configure(set_editor):
+    if set_editor is None:
+        for key, value in config["PREFERENCES"].items():
+            click.echo(f"{key} = {value}")
+        return
+    if is_valid_cmd(set_editor):
+        config.set("PREFERENCES", "EDITOR", set_editor)
+        with open(config_file_path, "w") as configfile:
+            config.write(configfile)
+        click.echo(f"Set journal editor to {set_editor}.")
+    else:
+        click.echo("Error: invalid editor command.")
+
 
 if __name__ == "__main__":
     main()
