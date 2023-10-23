@@ -9,7 +9,7 @@ from datetime import datetime
 
 from work_journal.setter import JournalSetter
 from work_journal.create import create_markdown_file
-from work_journal.config import is_valid_cmd, config, config_file_path
+from work_journal.config import is_valid_cmd, config_file, config_file_path
 
 
 @click.group()
@@ -158,20 +158,17 @@ def info(name: None | str):
             click.echo(msg)
 
 
-
-
-
 @main.command
 @click.option("--set-editor", type=str)
-def configure(set_editor):
+def config(set_editor):
     if set_editor is None:
-        for key, value in config["PREFERENCES"].items():
+        for key, value in config_file["PREFERENCES"].items():
             click.echo(f"{key} = {value}")
         return
     if is_valid_cmd(set_editor):
-        config.set("PREFERENCES", "EDITOR", set_editor)
-        with open(config_file_path, "w") as configfile:
-            config.write(configfile)
+        config_file.set("PREFERENCES", "EDITOR", set_editor)
+        with open(config_file_path, "w") as f:
+            config_file.write(f)
         click.echo(f"Set journal editor to {set_editor}.")
     else:
         click.echo("Error: invalid editor command.")

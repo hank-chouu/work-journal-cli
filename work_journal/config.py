@@ -1,9 +1,9 @@
 import os
-import sys
 from configparser import ConfigParser
 import subprocess
 
-def is_valid_cmd(cmd):
+
+def is_valid_cmd(cmd: str):
     try:
         subprocess.run(
             ["which", cmd],
@@ -14,16 +14,25 @@ def is_valid_cmd(cmd):
         return True
     except subprocess.CalledProcessError:
         return False
-    
 
-config = ConfigParser()
+
+def _find_path(cmd: str):
+    return subprocess.run(["which", cmd], capture_output=True, text=True).stdout
+
+
+config_file = ConfigParser()
 config_file_path = os.path.abspath(os.path.dirname(__file__)) + "/config.ini"
-config.read(config_file_path)
+config_file.read(config_file_path)
 
-if not config["PREFERENCES"]["PYTHON"]:
-    config.set("PREFERENCES", "PYTHON", sys.path[0])
+if not config_file["PREFERENCES"]["PYTHON"]:
+    if is_valid_cmd("python"):
+        python_path = _find_path("python")
+    elif is_valid_cmd("python3"):
+        python_path = _find_path("python3")
+
+    config_file.set("PREFERENCES", "PYTHON", python_path)
     with open(config_file_path, "w") as configfile:
-        config.write(configfile)
-    
-EDITOR_CMD = config["PREFERENCES"]["EDITOR"]
-PYTHON_PATH = config["PREFERENCES"]["PYTHON"]
+        config_file.write(configfile)
+
+EDITOR_CMD = config_file["PREFERENCES"]["EDITOR"]
+PYTHON_PATH = config_file["PREFERENCES"]["PYTHON"]
