@@ -1,3 +1,4 @@
 *.log
-work_journal_cli.egg-info/
 __pycache__/
+work_journal_cli.egg-info/
+build
