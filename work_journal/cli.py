@@ -1,15 +1,15 @@
 import getpass
 import os
 import re
-
-import click
-from crontab import CronTab, CronItem
-from croniter import croniter
 from datetime import datetime
 
-from work_journal.setter import JournalSetter
+import click
+from croniter import croniter
+from crontab import CronItem, CronTab
+
+from work_journal.config import config_file, config_file_path, is_valid_cmd
 from work_journal.create import create_markdown_file
-from work_journal.config import is_valid_cmd, config_file, config_file_path
+from work_journal.setter import JournalSetter
 
 
 @click.group()

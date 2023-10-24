@@ -1,9 +1,11 @@
-from datetime import datetime
 import os
-import click
 import subprocess
+from datetime import datetime
+
+import click
 
 from work_journal.config import EDITOR_CMD
+
 
 def _open_text_editor(filename):
     try:

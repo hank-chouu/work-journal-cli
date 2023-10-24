@@ -1,6 +1,6 @@
 import os
-from configparser import ConfigParser
 import subprocess
+from configparser import ConfigParser
 
 
 def is_valid_cmd(cmd: str):

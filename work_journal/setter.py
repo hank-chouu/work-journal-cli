@@ -1,10 +1,10 @@
-import sys
 import getpass
-from crontab import CronTab
 import os
+from datetime import datetime
+
 import click
 from cron_descriptor import get_description
-from datetime import datetime
+from crontab import CronTab
 
 from work_journal.config import PYTHON_PATH
 
