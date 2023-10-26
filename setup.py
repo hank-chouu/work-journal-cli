@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setup(
     name="work-journal-cli",
-    version="2.1.0",
+    version="2.1.1",
     packages=find_packages(),
     package_data={"work_journal": ["*.ini"]},
     install_requires=["click", "python-crontab", "cron-descriptor", "croniter"],
