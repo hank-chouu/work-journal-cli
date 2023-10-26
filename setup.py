@@ -24,7 +24,7 @@ setup(
         #   5 - Production/Stable
         "Development Status :: 3 - Alpha",
         # Indicate who your project is intended for
-        "Intended Audience :: End Users",
+        "Intended Audience :: End Users/Desktop",
         "Operating System :: Unix",
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.

@@ -1,78 +1,62 @@
 # Work Journal CLI Tool
 
-Some people consider it's a good practice to make work journal on a daily basis, to remind what you have achieved every day. In this CLI tool, we utitlize the Linux built-in tool crontab and set a schedule, to create a work journal in markdown file automatically. 
+Some people consider it's a good practice to write work journals on a daily basis, to remind what you have achieved every day. In this CLI tool, we utitlize the Linux built-in tool crontab and set a schedule, to create a work journal in markdown format automatically. 
 
-The idea is to pop up the editor window every day before leaving work, make it effortless to maintain the habit.
+The idea is to create a text file and pop up an editor window every day before leaving work, make it effortless to maintain the habit.
 
-This project is bulit on Linux Ubuntu, and is presumed to be only run on a Linux system, with text editor `gedit` installed.
+Linux/UNIX are theoretically all supported if you have these programs:
 
-## Setup 
+1. which
+2. crontab
+3. python/python3
 
-1. Clone the repo.
+These programs should be installed for the user and can be invoked through command line. Otherwise, the tool may has unpredictable behaviors. 
 
-```
-git clone https://github.com/hank-chouu/work-journal-cli.git
-cd work-journal-cli
-```
-
-2. Make sure your machine has `virtualenv` on it.
+## Install 
 
 ```
-pip install virtualenv
+pip install work-journal-cli
 ```
-
-3. Make a virtual enviroment, activate it, and install the dependencies. Note that once you successfully activated your virtual enviroment, your terminal should be marked with your env's name.
-
-```
-virtualenv venv
-source ./venv/bin/activate
-(venv) pip install -r requirements.txt
-```
-
-4. Run this command, and you should be good to go!
-
-```
-(venv) pip install --editable .
-```
-
 
 ## Usage 
 
-After finishing the above steps, you may run the following commands to setup your journaling schedule:
+```
+Usage: work-journal [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  config  Show configurations.
+  info    Show the details of the scheduled info.
+  new     Create a cron job for scheduling a journal.
+  remove  Remove the previously created work-journal cron job.
+  run     Make a journal and start writing immediately.
 
 ```
-(venv) work-journal setup "0 18 * * 1,2,3,4,5" --dir /home/user/path/for/journals
-```
 
-In this `setup` command, you need to pass a [cron schedule expression](https://crontab.guru/) to initiate. In the example, the expression means it's scheduled to pop out the editor every workday at 6pm. You can specify the directory you wnat the journals to be saved. If `--dir` is not specified, it will be the directory where the source file (`cli.py`) is located on default.
-
-If you want to modify or remove the previous created job, simply run
+To schedule a new journal, run
 
 ```
-(venv) work-journal remove
+work-journal new
 ```
 
-and setup a new job if you want. 
-
-To check for the existing job, you can run 
+The terminal will prompt you to input the required fields.
 
 ```
-crontab -l
+$ work-journal new
+Journal name [#]: test
+Schedule: 0 18 * * 1,2,3,4,5
+Folder path for saving journals [/home/user/work_journals]: 
+Journal is scheduled at At 06:00 PM, only on Monday, Tuesday, Wednesday, Thursday, and Friday with name test, and will be saved at /home/user/work_journals.
 ```
 
-the cron job made with this tool will have a comment with `#cron_journal`. You may assign a custom job comment to label out your scheduled journaling by passing a comment name with `-c` or `--job-comment` while setting up. Note that a duplicated comment is not allowed. 
+You need to pass a [cron expression](https://crontab.guru/) for the schedule. In the example, the expression means it's scheduled to pop out the editor every workday at 6pm. You can specify the directory you want the journals to be saved. 
 
-And to check when will the next journal will be created, run
+You can also assign the text editor you preferred, using the following line:
 
 ```
-(venv) work-journal next-run
+work-journal config --set-editor gedit
 ```
 
-## Help command
-
-You can run
-```
-(venv) work-journal --help
-```
-
-to see the help available.
+In the example, `gedit` is the command for calling the GNOME GUI text editor.
